@@ -1,6 +1,8 @@
 use clap::{arg, App};
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::io::{self, Write};
+use std::option::Option;
 
 #[derive(Deserialize, Debug)]
 pub struct MojangResponse {
@@ -10,7 +12,6 @@ pub struct MojangResponse {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    
     let matches = App::new("Minecraft UUID fetcher")
         .author("Juubes")
         .about("Prints the player's UUID with the name provided.")
@@ -20,6 +21,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .get_matches();
 
     if matches.is_present("interactive") {
+        let mut cache: HashMap<String, String> = HashMap::new();
+
         println!("CLI ready! Insert a name to fetch.");
 
         print!("> ");
@@ -38,11 +41,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 continue;
             }
 
-            let uuid = get_uuid_for_name(name).await;
-            if uuid.is_err() {
+            let uuid: Option<String>;
+            if cache.contains_key(name) {
+                uuid = Some(cache.get(name).unwrap().to_string());
+            } else {
+                let temp = get_uuid_for_name(name).await;
+                if temp.is_ok() {
+                    uuid = Some(temp.unwrap())
+                } else {
+                    uuid = None;
+                };
+            }
+
+            if uuid.is_none() {
                 println!("Error occurred.");
             } else {
-                println!("UUID for {}: {}", name, uuid.unwrap());
+                let uuid = uuid.unwrap();
+                cache.insert(name.to_owned(), uuid.clone());
+                println!("UUID for {}: {}", name, uuid);
             }
 
             print!("> ");
