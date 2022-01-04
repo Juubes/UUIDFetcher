@@ -1,0 +1,15 @@
+[package]
+name = "uuid-fetcher"
+version = "1.0.0"
+authors = ["Juubes <grumpt1@gmail.com>"]
+edition = "2021"
+description = "Simple CLI application for fetching Minecraft UUIDs from Mojang's API."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "3.0"
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
